@@ -7,7 +7,8 @@ var mysql_connection = mysql.createConnection({
     host:'ns117.hostinglotus.net',
     user: 'dntcom_dao',
     password: '123456@q!',
-    database: 'dntcom_landtransport'    
+    database: 'dntcom_landtransport',
+    multipleStatements:true   
 })
 
 mysql_connection.connect((err)=>{
@@ -22,11 +23,58 @@ app.listen(3000,()=>{
     console.log('Express Server is running at port 3000');
 })
 
+// R = Retrieve
 app.get('/car',(req, res)=>{
     mysql_connection.query('SELECT * FROM member',(err, rows, field)=>{
         if(!err)
-            res.send(rows)
+            rows.forEach(element => {
+                if(element.constructor==Array){
+                    res.send('Inserted employee id : ' + element[0].EmpID)
+                }
+            });
             else
             console.log(err);
     })
 })
+
+// C = Create
+app.post('/car', (req, res)=>{
+    let emp = req.body;
+    var sql = "SET @EmpId = ?;SET @Name = ?; SET @EmpCode = ?; SET @Salary = ?; \
+    CALL EmployeeAddOrEdit(@EmpId,@Name,@EmpCode,@Salary)";
+
+    mysql_connection.query(sql,[emp.EmpID, emp.Name, emp.EmpCode, emp.Salary],(err,rows,fields)=>{
+        if(!err){
+            res.send(rows);
+        }else{
+            console.log(err)
+        }
+    })
+})
+
+// R = Retrieve
+app.put('/car', (req, res)=>{
+    let emp = req.body;
+    var sql = "SET @EmpId = ?;SET @Name = ?; SET @EmpCode = ?; SET @Salary = ?; \
+    CALL EmployeeAddOrEdit(@EmpId,@Name,@EmpCode,@Salary)";
+
+    mysql_connection.query(sql,[emp.EmpID, emp.Name, emp.EmpCode, emp.Salary],(err,rows,fields)=>{
+        if(!err){
+            res.send(rows);
+        }else{
+            console.log(err)
+        }
+    })
+})
+
+// D = Delete
+app.delete('/car/:id', (req, res)=>{
+    mysql_connection.query('DELETE FROM car WHERE id = ?', [req.params.id],(err,rows,fields)=>{
+        if(!err){
+            res.send('Deleted successfully');
+        }else{
+            console.log(err)
+        }
+    })
+})
+
