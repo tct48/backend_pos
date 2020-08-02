@@ -13,29 +13,38 @@ var mysql_connection = mysql.createConnection({
   multipleStatements: true,
 });
 
-// C => Created
+// C => Created || SIGNUP
 router.post('/', (req, res, next)=>{
     let model = req.body;
     model.created = new Date().getTime();
     model.updated = new Date().getTime();
-    var sql = "INSERT INTO member (name, username, password, role, status, company, created, updated) VALUES (";
-    sql += "'" + model.name + "', '" + model.username + "', '" + model.password + "', " + model.role + ", " + model.status + ", " + model.company
-    sql += ", " +  model.created  + ", " + model.updated +")";
 
-    mysql_connection.query(sql, (err, rows, fields)=>{
-        model.created = new Date(model.created);
-        model.updated = new Date(model.updated);
-        if(!err){
-            return res.status(200).json({
-                item: rows.insertId,
-                detail: model
-            })
-        }else{
+    bcrypt.hash(model.password, 10, (err,hash)=>{
+        if(err){
             return res.status(500).json({
-                code: 500,
-                message: catchError(err.errno)
-            })
+                error: err.message
+            });
         }
+
+        var sql = "INSERT INTO member (name, username, password, role, status, company, created, updated) VALUES (";
+        sql += "'" + model.name + "', '" + model.username + "', '" + hash + "', " + model.role + ", " + model.status + ", " + model.company
+        sql += ", " +  model.created  + ", " + model.updated +")";
+        model.password = hash;
+        mysql_connection.query(sql, (err, rows, fields)=>{
+            model.created = new Date(model.created);
+            model.updated = new Date(model.updated);
+            if(!err){
+                return res.status(200).json({
+                    item: rows.insertId,
+                    detail: model
+                })
+            }else{
+                return res.status(500).json({
+                    code: 500,
+                    message: catchError(err.errno)
+                })
+            }
+        })
     })
 })
 
@@ -53,6 +62,27 @@ router.get("/", (req, res, next) => {
     skip = sp * lp;
   
     var sql = "SELECT * FROM member LIMIT " + sp + "," + lp;
+  
+    mysql_connection.query(sql, (err, rows, field) => {
+      if(!err){
+          return res.status(200).json({
+              total_items: rows.length,
+              items: rows,
+            });
+      }else{
+          return res.status(500).json({
+              code: 500,
+              text: err.name
+          })
+      }
+    });
+  });
+
+// R => Retrieve by ID
+router.get("/:_id", (req, res, next) => {
+    let _id = req.params._id;
+  
+    var sql = "SELECT * FROM member WHERE _id = " + _id;
   
     mysql_connection.query(sql, (err, rows, field) => {
       if(!err){
@@ -105,10 +135,48 @@ router.delete('/:_id', (req, res)=>{
             })
         }else{
             return res.status(500).json({
-                message: "เกิดข้อผิดพลาด"
+                code: 500,
+                message: catchError(err.errno)
             })
         }
     })
+})
+
+// Login
+router.post("/login", (req, res, next)=>{
+    let model = req.body;
+    sql="SELECT _id, username, password, name, role FROM member WHERE username ='" + model.username + "'";
+    mysql_connection.query(sql, (err, rows, field) => {
+        bcrypt.compare(model.password, rows[0].password, (err,result)=>{
+            if(err) {
+                return res.status(500).json({
+                    code: 500,
+                    message: catchError(err.errno)
+                })
+            }
+
+            sql="UPDATE member SET updated = " + new Date().getTime();
+            mysql_connection.query(sql, (err, sub_rows, field)=>{
+                if(!err){
+                    return res.status(200).json({
+                        code: 200,
+                        message: "Auth Successful",
+                        user : rows,
+                    })
+                }
+                return res.status(500).json({
+                    code: 500,
+                    message: catchError(err.errno)
+                })
+            })
+        })
+        if(err){
+            return res.status(500).json({
+                code: 500,
+                message: catchError(err.errno)
+            })
+        }
+      });
 })
 
 function catchError(code){
