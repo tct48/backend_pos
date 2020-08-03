@@ -22,11 +22,12 @@ router.post('/', (req, res, next) => {
     mysql_connection.query(sql, (err, rows, fields) => {
         model.receipt_no = 1;
         if (rows.receipt_no) {
-            model.receipt_no = rows.receipt_no;
+            model.receipt_no = rows.receipt_no+1;
+            console.log(rows);
         }
-        var sql = "INSERT INTO receipt (receipt_no, dor, customer, title, type, total, company, member, created, updated) VALUES (";
-        sql += "" + model.receipt_no + ", " + model.dor + ", '" + model.customer + "', "  + model.title + "', " + model.type + ", " + model.total + ", " + model.company + ", " + model.member + ", " + model.created + ", " + model.updated + ")";
-
+        var sql = "INSERT INTO receipt (receipt_no, customer, title, type, total, company, member, created, updated) VALUES (";
+        sql += "" + model.receipt_no + ", '" + model.customer + "', '"  + model.title + "', " + model.type + ", " + model.total + ", " + model.company + ", " + model.member + ", " + model.created + ", " + model.updated + ")";
+        console.log(sql)
         mysql_connection.query(sql, (err, rows, fields) => {
             if (!err) {
                 return res.status(200).json({
@@ -34,6 +35,7 @@ router.post('/', (req, res, next) => {
                     detail: model
                 })
             } else {
+                console.log("BEC")
                 return res.status(500).json({
                     code: 500,
                     message: catchError(err.errno)
@@ -75,7 +77,7 @@ router.post('/detail/:_id', (req, res, next) => {
 
 // R => Retrieve All Receipt
 router.get("/", (req, res, next) => {
-    let sp, lp, skip;
+    let sp, lp, skip, role, company;
     if (!req.query["sp"] || !req.query["lp"]) {
         sp = 0;
         lp = 5;
@@ -84,9 +86,24 @@ router.get("/", (req, res, next) => {
         lp = Object.values(req.query["lp"]);
     }
 
+    let sql = "SELECT * FROM receipt";
+
+    if(req.query["company"] && req.query["role"]){
+        company = Object.values(req.query["company"]);
+        role = Object.values(req.query["role"]);
+
+        // 5 == all
+        if(company!=5 && role==1){
+            sql += " WHERE company=" + company;
+        }
+    }
+    
     skip = sp * lp;
 
-    let sql = "SELECT * FROM receipt LIMIT " + sp + "," + lp;
+    
+    sql+=" ORDER BY _id DESC";
+    sql+=" LIMIT " + skip + ", " + lp;
+    console.log(sql);
 
     mysql_connection.query(sql, (err, rows, field) => {
         if (!err) {

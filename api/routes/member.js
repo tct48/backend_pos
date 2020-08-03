@@ -62,12 +62,13 @@ router.get("/", (req, res, next) => {
     skip = sp * lp;
 
     var sql = "SELECT * FROM member WHERE member.status!=0";
-
+    console.log(sql)
     mysql_connection.query(sql, (err, rows, field) => {
         if (!err) {
             var total_items = rows.length;
             var sql = "SELECT member._id,member.name,member.username,member.password,member.role,member.status,company.name as company,member.created,member.updated \
             FROM member, company WHERE member.status!=0 AND member.company=company._id LIMIT " + skip + "," + lp;
+            console.log(sql)
             mysql_connection.query(sql, (err, rows, field) => {
                 return res.status(200).json({
                     total_items: total_items,
