@@ -24,8 +24,8 @@ router.post('/', (req, res, next) => {
         if (rows.receipt_no) {
             model.receipt_no = rows.receipt_no;
         }
-        var sql = "INSERT INTO receipt (receipt_no, dor, title, type, total, company, member, created, updated) VALUES (";
-        sql += "" + model.receipt_no + ", " + model.dor + ", '" + model.title + "', " + model.type + ", " + model.total + ", " + model.company + ", " + model.member + ", " + model.created + ", " + model.updated + ")";
+        var sql = "INSERT INTO receipt (receipt_no, dor, customer, title, type, total, company, member, created, updated) VALUES (";
+        sql += "" + model.receipt_no + ", " + model.dor + ", '" + model.customer + "', "  + model.title + "', " + model.type + ", " + model.total + ", " + model.company + ", " + model.member + ", " + model.created + ", " + model.updated + ")";
 
         mysql_connection.query(sql, (err, rows, fields) => {
             if (!err) {
