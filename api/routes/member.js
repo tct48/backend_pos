@@ -147,6 +147,20 @@ router.post("/login", (req, res, next) => {
     let model = req.body;
     sql = "SELECT _id, username, password, name, role FROM member WHERE username ='" + model.username + "'";
     mysql_connection.query(sql, (err, rows, field) => {
+        if (err) {
+            return res.status(500).json({
+                code: 500,
+                message: catchError(err.errno)
+            })
+        }
+
+        if (!rows[0].password) {
+            return res.status(500).json({
+                code: 500,
+                message: "model is " + err
+            })
+        }
+
         bcrypt.compare(model.password, rows[0].password, (err, result) => {
             if (err) {
                 return res.status(500).json({
@@ -155,38 +169,42 @@ router.post("/login", (req, res, next) => {
                 })
             }
 
-            sql = "UPDATE member SET updated = " + new Date().getTime();
-            mysql_connection.query(sql, (err, sub_rows, field) => {
-                if (!err) {
-                    const token = jwt.sign({
-                        username: rows[0].username,
-                        userId: rows[0]._id,
-                      },
-                      "secret", {
-                        expiresIn: "24h",
-                      }
-                    );
-                    accessToken = token;
-
-                    return res.status(200).json({
-                        code: 200,
-                        message: "Auth Successful",
-                        user: rows[0],
-                        accessToken: token
-                    })
-                }
+            if(result==false){
                 return res.status(500).json({
                     code: 500,
-                    message: catchError(err.errno)
+                    message: "Username หรือ Password ไม่ถูกต้อง !"
                 })
-            })
+            }
+
+            if (result == true) {
+                sql = "UPDATE member SET updated = " + new Date().getTime();
+                mysql_connection.query(sql, (err, sub_rows, field) => {
+                    if (!err) {
+                        const token = jwt.sign({
+                                username: rows[0].username,
+                                userId: rows[0]._id,
+                            },
+                            "secret", {
+                                expiresIn: "24h",
+                            }
+                        );
+                        accessToken = token;
+
+                        return res.status(200).json({
+                            code: 200,
+                            message: "Auth Successful",
+                            user: rows[0],
+                            accessToken: token
+                        })
+                    }
+                    return res.status(500).json({
+                        code: 500,
+                        message: catchError(err.errno)
+                    })
+                })
+            }
         })
-        if (err) {
-            return res.status(500).json({
-                code: 500,
-                message: catchError(err.errno)
-            })
-        }
+
     });
 })
 
