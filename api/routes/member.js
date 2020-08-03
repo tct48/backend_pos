@@ -27,7 +27,7 @@ router.post('/', (req, res, next) => {
         }
 
         var sql = "INSERT INTO member (name, username, password, role, status, company, created, updated) VALUES (";
-        sql += "'" + model.name + "', '" + model.username + "', '" + hash + "', " + model.role + ", " + model.status + ", " + model.company
+        sql += "'" + model.name + "', '" + model.username + "', '" + hash + "', " + model.role + ", " + 1 + ", " + model.company
         sql += ", " + model.created + ", " + model.updated + ")";
         model.password = hash;
         mysql_connection.query(sql, (err, rows, fields) => {
