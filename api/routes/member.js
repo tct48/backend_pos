@@ -61,14 +61,18 @@ router.get("/", (req, res, next) => {
 
     skip = sp * lp;
 
-    var sql = "SELECT * FROM member LIMIT " + sp + "," + lp;
+    var sql = "SELECT * FROM member";
 
     mysql_connection.query(sql, (err, rows, field) => {
         if (!err) {
-            return res.status(200).json({
-                total_items: rows.length,
-                items: rows,
-            });
+            var total_items = rows.length;
+            var sql = "SELECT * FROM member LIMIT " + sp + "," + lp;
+            mysql_connection.query(sql, (err, rows, field)=>{
+                return res.status(200).json({
+                    total_items: total_items,
+                    items: rows,
+                });
+            })
         } else {
             return res.status(500).json({
                 code: 500,
@@ -151,6 +155,13 @@ router.post("/login", (req, res, next) => {
             return res.status(500).json({
                 code: 500,
                 message: catchError(err.errno)
+            })
+        }
+
+        if(!rows[0]){
+            return res.status(500).json({
+                code: 500,
+                message: "model is " + err
             })
         }
 
