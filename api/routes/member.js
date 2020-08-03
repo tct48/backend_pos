@@ -153,7 +153,7 @@ router.delete('/:_id', (req, res) => {
 // Login
 router.post("/login", (req, res, next) => {
     let model = req.body;
-    sql = "SELECT _id, username, password, name, role FROM member WHERE username ='" + model.username + "'";
+    sql = "SELECT _id, username, password, name, role, company FROM member WHERE username ='" + model.username + "'";
     mysql_connection.query(sql, (err, rows, field) => {
         if (err) {
             return res.status(500).json({
