@@ -158,10 +158,16 @@ router.post("/login", (req, res, next)=>{
             sql="UPDATE member SET updated = " + new Date().getTime();
             mysql_connection.query(sql, (err, sub_rows, field)=>{
                 if(!err){
+                    const token = jwt.sign({
+                        username: user[0].username,
+                        userId: user[0]._id
+                    })
+
                     return res.status(200).json({
                         code: 200,
                         message: "Auth Successful",
                         user : rows,
+                        accessToken: token
                     })
                 }
                 return res.status(500).json({
