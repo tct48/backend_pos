@@ -67,7 +67,7 @@ router.get("/", (req, res, next) => {
         if (!err) {
             var total_items = rows.length;
             var sql = "SELECT member._id,member.name,member.username,member.password,member.role,member.status,company.name as company,member.created,member.updated \
-            FROM member, company WHERE member.company=company._id LIMIT " + sp + "," + lp;
+            FROM member, company WHERE member.status!=0 AND member.company=company._id LIMIT " + sp + "," + lp;
             mysql_connection.query(sql, (err, rows, field)=>{
                 return res.status(200).json({
                     total_items: total_items,
@@ -131,7 +131,7 @@ router.put('/', (req, res) => {
 router.delete('/:_id', (req, res) => {
     let _id = req.params._id;
 
-    var sql = "DELETE FROM member WHERE _id = " + _id
+    var sql = "UPDATE member SET status=0 WHERE _id = " + _id
     mysql_connection.query(sql, (err, rows, fields) => {
         if (!err) {
             return res.status(200).json({
