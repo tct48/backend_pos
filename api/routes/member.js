@@ -68,7 +68,7 @@ router.get("/", (req, res, next) => {
             var total_items = rows.length;
             var sql = "SELECT member._id,member.name,member.username,member.password,member.role,member.status,company.name as company,member.created,member.updated \
             FROM member, company WHERE member.status!=0 AND member.company=company._id LIMIT " + skip + "," + lp;
-            mysql_connection.query(sql, (err, rows, field)=>{
+            mysql_connection.query(sql, (err, rows, field) => {
                 return res.status(200).json({
                     total_items: total_items,
                     items: rows,
@@ -110,21 +110,24 @@ router.put('/', (req, res) => {
     // var sql = "SET @EmpId = ?;SET @Name = ?; SET @EmpCode = ?; SET @Salary = ?; \
     // CALL EmployeeAddOrEdit(@EmpId,@Name,@EmpCode,@Salary)";
     model.updated = new Date().getTime();
-    let sql = "UPDATE member SET name='" + model.name + "', username='" + model.username + "', password='" + model.password + "', role=" + model.role + ", status=" + model.status + ",company=" + model.company + ", updated=" + model.updated + "";
-    sql += " WHERE _id = " + model._id;
 
-    mysql_connection.query(sql, (err, rows, fields) => {
-        if (!err) {
-            return res.status(200).json({
-                item: model
-            })
-        } else {
-            return res.status(500).json({
-                code: 500,
-                message: catchError(err.errno)
-            })
-        }
-    })
+    bcrypt.hash(model.password, 10, (err, hash) => {
+        let sql = "UPDATE member SET name='" + model.name + "', username='" + model.username + "', password='" + hash + "', role=" + model.role + ", status=" + model.status + ",company=" + model.company + ", updated=" + model.updated + "";
+        sql += " WHERE _id = " + model._id;
+
+        mysql_connection.query(sql, (err, rows, fields) => {
+            if (!err) {
+                return res.status(200).json({
+                    item: model
+                })
+            } else {
+                return res.status(500).json({
+                    code: 500,
+                    message: catchError(err.errno)
+                })
+            }
+        })
+    });
 })
 
 // D = Delete
@@ -159,7 +162,7 @@ router.post("/login", (req, res, next) => {
             })
         }
 
-        if(!rows[0]){
+        if (!rows[0]) {
             return res.status(500).json({
                 code: 500,
                 message: "model is " + err
@@ -181,7 +184,7 @@ router.post("/login", (req, res, next) => {
                 })
             }
 
-            if(result==false){
+            if (result == false) {
                 return res.status(500).json({
                     code: 500,
                     message: "Username หรือ Password ไม่ถูกต้อง !"
