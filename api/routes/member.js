@@ -159,8 +159,8 @@ router.post("/login", (req, res, next) => {
             mysql_connection.query(sql, (err, sub_rows, field) => {
                 if (!err) {
                     const token = jwt.sign({
-                        username: user[0].username,
-                        userId: user[0]._id,
+                        username: rows[0].username,
+                        userId: rows[0]._id,
                       },
                       "secret", {
                         expiresIn: "24h",
