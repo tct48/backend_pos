@@ -61,7 +61,7 @@ router.get("/", (req, res, next) => {
 
     skip = sp * lp;
 
-    var sql = "SELECT * FROM member";
+    var sql = "SELECT * FROM member WHERE member.status!=0";
 
     mysql_connection.query(sql, (err, rows, field) => {
         if (!err) {
