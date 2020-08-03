@@ -66,7 +66,8 @@ router.get("/", (req, res, next) => {
     mysql_connection.query(sql, (err, rows, field) => {
         if (!err) {
             var total_items = rows.length;
-            var sql = "SELECT * FROM member LIMIT " + sp + "," + lp;
+            var sql = "SELECT member._id,member.name,member.username,member.password,member.role,member.status,company.name,member.created,member.updated \
+            FROM member, company WHERE member.company=company._id LIMIT " + sp + "," + lp;
             mysql_connection.query(sql, (err, rows, field)=>{
                 return res.status(200).json({
                     total_items: total_items,
