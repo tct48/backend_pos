@@ -9,6 +9,7 @@ const Member = require('./api/routes/member');
 const Company = require('./api/routes/company.js');
 const Receipt = require('./api/routes/receipt');
 const Category = require('./api/routes/category');
+const Summary = require('./api/routes/summary.js');
 
 // ประกาศตัวแปร แบบ Global
 var mysql_connection = mysql.createConnection({
@@ -51,6 +52,7 @@ app.use(function(req, res, next){
 app.use("/member", Member);
 app.use("/company", Company);
 app.use("/receipt", Receipt);
+app.use("/summary", Summary);
 app.use("/category", Category);
 
 module.exports = app;
