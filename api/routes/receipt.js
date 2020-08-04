@@ -123,7 +123,7 @@ router.get("/", (req, res, next) => {
 // R=> Retrive Receipt by ID
 router.get("/:_id", (req, res, next) => {
     let _id = req.params._id;
-    let sql = "SELECT receipt_no, dor, title, type, total, company, member, created, updated FROM receipt WHERE _id = " + _id;
+    let sql = "SELECT receipt._id,receipt.receipt_no,receipt. dor,receipt.customer,receipt.title,receipt.type,receipt.total,receipt.company,member.name as member,receipt.created,receipt.updated FROM receipt , member WHERE receipt.member=member._id AND receipt._id = " + _id;
     console.log(sql)
     mysql_connection.query(sql, (err, rows, field) => {
         if (!err) {
