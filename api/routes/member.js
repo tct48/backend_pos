@@ -12,6 +12,7 @@ var mysql_connection = mysql.createConnection({
     database: "dntcom_deejung",
     multipleStatements: true,
 });
+mysql_connection.timeout=0;
 
 // C => Created || SIGNUP
 router.post('/', (req, res, next) => {
@@ -50,7 +51,7 @@ router.post('/', (req, res, next) => {
 
 // R => Retrieve
 router.get("/", (req, res, next) => {
-    var sp, lp, skip;
+    var sp, lp, skip, role, company, sql;
     if (!req.query["sp"] || !req.query["lp"]) {
         sp = 0;
         lp = 5;
@@ -59,15 +60,24 @@ router.get("/", (req, res, next) => {
         lp = Object.values(req.query["lp"]);
     }
 
-    skip = sp * lp;
+    role=Object.values(req.query["role"])[0];
+    company=Object.values(req.query["company"])[0];
 
-    var sql = "SELECT * FROM member WHERE member.status!=0";
+    skip = sp * lp;
+    if(role==1)
+        sql = "SELECT * FROM member WHERE member.status!=0";
+    else
+        sql = "SELECT * FROM member WHERE member.status!=0 AND company=" + company;
     console.log(sql)
     mysql_connection.query(sql, (err, rows, field) => {
         if (!err) {
             var total_items = rows.length;
-            var sql = "SELECT member._id,member.name,member.username,member.password,member.role,member.status,company.name as company,member.created,member.updated \
-            FROM member, company WHERE member.status!=0 AND member.company=company._id LIMIT " + skip + "," + lp;
+            if(role==1)
+                sql = "SELECT member._id,member.name,member.username,member.password,member.role,member.status,company.name as company,member.created,member.updated \
+                FROM member, company WHERE member.status!=0 AND member.company=company._id LIMIT " + skip + "," + lp;
+            else
+                sql = "SELECT member._id,member.name,member.username,member.password,member.role,member.status,company.name as company,member.created,member.updated \
+                FROM member, company WHERE member.status!=0 AND company="+ company + " AND member.company=company._id LIMIT " + skip + "," + lp;
             console.log(sql)
             mysql_connection.query(sql, (err, rows, field) => {
                 return res.status(200).json({
@@ -76,6 +86,7 @@ router.get("/", (req, res, next) => {
                 });
             })
         } else {
+            console.log(err)
             return res.status(500).json({
                 code: 500,
                 text: err.name

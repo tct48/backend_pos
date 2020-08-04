@@ -12,6 +12,7 @@ var mysql_connection = mysql.createConnection({
   database: "dntcom_deejung",
   multipleStatements: true,
 });
+mysql_connection.timeout=0;
 
 // C => Created
 router.post('/', (req, res, next)=>{

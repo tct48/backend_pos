@@ -11,6 +11,8 @@ var mysql_connection = mysql.createConnection({
     multipleStatements: true,
 });
 
+mysql_connection.timeout=0;
+
 // R => Retrieve All Receipt
 router.get("/:company", (req, res, next) => {
     let sql="";

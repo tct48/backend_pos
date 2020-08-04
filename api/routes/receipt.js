@@ -10,6 +10,7 @@ var mysql_connection = mysql.createConnection({
     database: "dntcom_deejung",
     multipleStatements: true,
 });
+mysql_connection.timeout=0;
 
 // C => Created Receipt
 router.post('/', (req, res, next) => {
@@ -88,12 +89,13 @@ router.get("/", (req, res, next) => {
 
     let sql = "SELECT * FROM receipt";
 
-    if(req.query["company"] && req.query["role"]){
-        company = Object.values(req.query["company"]);
-        role = Object.values(req.query["role"]);
-
+    if(req.query["company"]!="" && req.query["role"]!=""){
+        company = Object.values(req.query["company"])[0];
+        role = Object.values(req.query["role"])[0];
+        console.log(company)
+        console.log(role)
         // 5 == all
-        if(company!=5 && role==1){
+        if(company!=5 && role!=1){
             sql += " WHERE company=" + company;
         }
     }
@@ -112,11 +114,13 @@ router.get("/", (req, res, next) => {
                 items: rows,
             });
         } else {
+            console.log("********* ERROR ************");
+            console.log(err)
             return res.status(500).json({
                 code: 500,
                 message: catchError(err.errno)
             })
-        }
+        } 
     });
 });
 
