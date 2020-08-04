@@ -19,7 +19,7 @@ router.get("/", (req, res, next) => {
     
 
     for(let i=1;i<5;i++){
-        sql = "SELECT DAY(dor) as Date, MONTH(dor) as Month, SUM(total) as total_price FROM receipt WHERE MONTH(dor)=8 AND company=" + i + " GROUP BY DAY(dor) ORDER BY DAY(dor) DESC LIMIT 15";
+        sql = "SELECT dor, SUM(total) as total_price FROM receipt WHERE MONTH(dor)=8 AND company=" + i + " GROUP BY DAY(dor) ORDER BY DAY(dor) DESC LIMIT 15";
         mysql_connection.query(sql, (err, rows, field) => {
             if (!err) {
                 response.push(rows[0])
