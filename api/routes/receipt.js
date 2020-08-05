@@ -83,8 +83,8 @@ router.get("/", (req, res, next) => {
         sp = 0;
         lp = 5;
     } else {
-        sp = Object.values(req.query["sp"]);
-        lp = Object.values(req.query["lp"]);
+        sp = req.query["sp"];
+        lp = req.query["lp"];
     }
 
     let sql = "SELECT * FROM receipt";
@@ -95,27 +95,94 @@ router.get("/", (req, res, next) => {
         console.log(company)
         console.log(role)
         // 5 == all
-        if(company!=5 && role!=1){
-            sql += " WHERE company=" + company;
-        }
+        sql += " WHERE company=" + company;
     }
     
     skip = sp * lp;
 
     
-    sql+=" ORDER BY _id DESC";
-    sql+=" LIMIT " + skip + ", " + lp;
+    
     console.log(sql);
 
     mysql_connection.query(sql, (err, rows, field) => {
         if (!err) {
-            return res.status(200).json({
-                total_items: rows.length,
-                items: rows,
-            });
+            sql+=" ORDER BY _id DESC";
+            sql+=" LIMIT " + skip + ", " + lp;
+            mysql_connection.query(sql, (err, sub_rows, field)=>{
+                if(!err){
+                    return res.status(200).json({
+                        total_items: rows.length,
+                        items: sub_rows,
+                    });
+                }else{
+
+                }
+            })
+            
         } else {
             console.log("********* ERROR ************");
             console.log(err)
+            return res.status(500).json({
+                code: 500,
+                message: catchError(err.errno)
+            })
+        } 
+    });
+});
+
+// R => Retrieve All Receipt From Filter
+router.get("/search", (req, res, next) => {
+    let sp, lp, skip, role, company, filter;
+    if (!req.query["sp"] || !req.query["lp"]) {
+        sp = 0;
+        lp = 5;
+    } else {
+        sp = req.query["sp"];
+        lp = req.query["lp"];
+    }
+
+    let sql = "SELECT * FROM receipt";
+
+    if(req.query["company"]!="" && req.query["role"]!=""){
+        company = Object.values(req.query["company"])[0];
+        role = Object.values(req.query["role"])[0];
+
+        if(Object.values(req.query["textSearch"])[0]!="undefined"){
+            filter = req.query["textSearch"]
+        }else
+            filter="";
+        
+        console.log(req.query["textSearch"]);
+        // 5 == all
+        if(company==5 && role==1){
+            sql += " WHERE customer LIKE '%" + filter + "%' OR title LIKE '%" + filter + "%'";
+        }else{
+            sql += " WHERE company=" + company + " AND (customer LIKE '%" + filter + "%' OR title LIKE '%" + filter + "%')";
+        }
+    }
+    
+    skip = sp * lp;
+    console.log(sql)
+
+    mysql_connection.query(sql, (err, rows, field) => {
+        if (!err) {
+            sql+=" ORDER BY _id DESC";
+            sql+=" LIMIT " + skip + ", " + lp;
+            mysql_connection.query(sql, (err,sub_rows, field)=> {
+                if(!err){
+                    return res.status(200).json({
+                        total_items: rows.length,
+                        items: sub_rows,
+                    });
+                }else{
+                    return res.status(500).json({
+                        code: 500,
+                        message: catchError(err.errno)
+                    })
+                }
+            })
+            
+        } else {
             return res.status(500).json({
                 code: 500,
                 message: catchError(err.errno)
