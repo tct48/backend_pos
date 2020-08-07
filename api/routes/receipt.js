@@ -55,7 +55,7 @@ router.post('/detail/:_id', (req, res, next) => {
 
     let round = model.length;
     for (let i = 0; i < round; i++) {
-        sql = "INSERT INTO receipt_detail (name, price, receipt) VALUES ('" + model[i].name + "', " + model[i].price + " , " + _id + ")";
+        sql = "INSERT INTO receipt_detail (name,address, price, receipt) VALUES ('" + model[i].name + "', " + model[i].address + " , " + model[i].price + " , " + _id + ")";
         mysql_connection.query(sql, (err, rows, fields) => {
             if (!err) {
                 if (i == round - 1) {
@@ -194,7 +194,7 @@ router.get("/search", (req, res, next) => {
 // R=> Retrive Receipt by ID
 router.get("/:_id", (req, res, next) => {
     let _id = req.params._id;
-    let sql = "SELECT receipt._id,receipt.receipt_no,receipt. dor,receipt.customer,receipt.title,receipt.type,receipt.total,receipt.company,member.name as member,receipt.created,receipt.updated FROM receipt , member WHERE receipt.member=member._id AND receipt._id = " + _id;
+    let sql = "SELECT receipt._id,receipt.address,receipt.receipt_no,receipt. dor,receipt.customer,receipt.title,receipt.type,receipt.total,receipt.company,member.name as member,receipt.created,receipt.updated FROM receipt , member WHERE receipt.member=member._id AND receipt._id = " + _id;
     console.log(sql)
     mysql_connection.query(sql, (err, rows, field) => {
         if (!err) {
