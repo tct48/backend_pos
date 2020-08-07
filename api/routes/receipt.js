@@ -159,7 +159,7 @@ router.get("/search", (req, res, next) => {
         if(company==5 && role==1){
             sql += " WHERE customer LIKE '%" + filter + "%' OR title LIKE '%" + filter + "%'";
         }else{
-            sql += " WHERE company=" + company + " AND (customer LIKE '%" + filter + "%' OR title LIKE '%" + filter + "%')";
+            sql += " WHERE company=" + company + " AND (customer LIKE '%" + filter + "%' OR title LIKE '%" + filter + "%' OR _id LIKE '%" + filter + "%')";
         }
     }
     
