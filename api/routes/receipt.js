@@ -26,8 +26,8 @@ router.post('/', (req, res, next) => {
             model.receipt_no = rows.receipt_no+1;
             console.log(rows);
         }
-        var sql = "INSERT INTO receipt (receipt_no, customer, title, type, total, company, member, created, updated) VALUES (";
-        sql += "" + model.receipt_no + ", '" + model.customer + "', '"  + model.title + "', " + model.type + ", " + model.total + ", " + model.company + ", " + model.member + ", " + model.created + ", " + model.updated + ")";
+        var sql = "INSERT INTO receipt (receipt_no, customer, address, title, type, total, company, member, created, updated) VALUES (";
+        sql += "" + model.receipt_no + ", '" + model.customer + "', '"  + model.title + "', '" + model.address + "', " + model.type + ", " + model.total + ", " + model.company + ", " + model.member + ", " + model.created + ", " + model.updated + ")";
         console.log(sql)
         mysql_connection.query(sql, (err, rows, fields) => {
             if (!err) {
@@ -37,6 +37,7 @@ router.post('/', (req, res, next) => {
                 })
             } else {
                 console.log("BEC")
+                console.log(catchError(err.errno))
                 return res.status(500).json({
                     code: 500,
                     message: catchError(err.errno)
@@ -55,7 +56,7 @@ router.post('/detail/:_id', (req, res, next) => {
 
     let round = model.length;
     for (let i = 0; i < round; i++) {
-        sql = "INSERT INTO receipt_detail (name,address, price, receipt) VALUES ('" + model[i].name + "', " + model[i].address + " , " + model[i].price + " , " + _id + ")";
+        sql = "INSERT INTO receipt_detail (name, price, receipt) VALUES ('" + model[i].name + "', " + model[i].price + " , " + _id + ")";
         mysql_connection.query(sql, (err, rows, fields) => {
             if (!err) {
                 if (i == round - 1) {
@@ -65,6 +66,7 @@ router.post('/detail/:_id', (req, res, next) => {
                     })
                 }
             } else {
+                console.log(sql);
                 return res.status(500).json({
                     code: 500,
                     message: catchError(err.errno)
