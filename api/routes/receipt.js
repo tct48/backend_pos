@@ -26,8 +26,8 @@ router.post('/', (req, res, next) => {
             model.receipt_no = rows.receipt_no+1;
             console.log(rows);
         }
-        var sql = "INSERT INTO receipt (receipt_no, customer, title, address, type, total, company, member, created, updated) VALUES (";
-        sql += "" + model.receipt_no + ", '" + model.customer + "', '"  + model.title + "', '" + model.address + "', " + model.type + ", " + model.total + ", " + model.company + ", " + model.member + ", " + model.created + ", " + model.updated + ")";
+        var sql = "INSERT INTO receipt (receipt_no, customer, title, address, type, total, company, member, created, updated, status) VALUES (";
+        sql += "" + model.receipt_no + ", '" + model.customer + "', '"  + model.title + "', '" + model.address + "', " + model.type + ", " + model.total + ", " + model.company + ", " + model.member + ", " + model.created + ", " + model.updated + ", 1)";
         console.log(sql)
         mysql_connection.query(sql, (err, rows, fields) => {
             if (!err) {
@@ -196,7 +196,7 @@ router.get("/search", (req, res, next) => {
 // R=> Retrive Receipt by ID
 router.get("/:_id", (req, res, next) => {
     let _id = req.params._id;
-    let sql = "SELECT receipt._id,receipt.address,receipt.receipt_no,receipt. dor,receipt.customer,receipt.title,receipt.type,receipt.total,receipt.company,member.name as member,receipt.created,receipt.updated FROM receipt , member WHERE receipt.member=member._id AND receipt._id = " + _id;
+    let sql = "SELECT receipt._id,receipt.address, receipt.status,receipt.receipt_no,receipt. dor,receipt.customer,receipt.title,receipt.type,receipt.total,receipt.company,member.name as member,receipt.created,receipt.updated FROM receipt , member WHERE receipt.member=member._id AND receipt._id = " + _id;
     console.log(sql)
     mysql_connection.query(sql, (err, rows, field) => {
         if (!err) {
@@ -243,6 +243,24 @@ router.put('/', (req, res) => {
             return res.status(500).json({
                 code: 500,
                 message: catchError(err.errno)
+            })
+        }
+    })
+})
+
+// U = Update Status Bill by ID
+router.put('/status',(req, res)=>{
+    let model = req.body;
+    let sql = "UPDATE receipt SET status=" + model.status + " WHERE _id=" + model._id;
+    mysql_connection.query(sql, (err, rows,field) => {
+        if(!err){
+            return res.status(200).json({
+                receipt:rows
+            })
+        }else{
+            return res.status(500).json({
+                code: 500,
+                message: catchError(err.err)
             })
         }
     })

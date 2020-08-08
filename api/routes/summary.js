@@ -18,8 +18,10 @@ router.get("/:company", (req, res, next) => {
     let sql="";
     // รายรับ 15 วันล่าสุด เดือนที่ 8 บริษัท ดีจัง
     // SELECT dor, SUM(total) as total_price FROM receipt WHERE company=1 GROUP BY MONTH(dor) ORDER BY MONTH(dor) DESC LIMIT 7
+    let dumb = new Date();
     let company = req.params.company;
-    sql = "SELECT _id, dor, SUM(total) as total_price FROM receipt WHERE MONTH(dor)=8 AND company=" + company + " GROUP BY DAY(dor) ORDER BY DAY(dor) LIMIT 15";
+    sql = "SELECT _id, dor, SUM(total) as total_price, status FROM receipt WHERE MONTH(dor)=" + (Number(dumb.getMonth())+1) + " AND company=" + company + " GROUP BY DAY(dor), status LIMIT 15";
+    console.log(sql)
     mysql_connection.query(sql, (err, rows, field) => {
         if (!err) {
                 return res.status(200).json({
@@ -48,7 +50,7 @@ router.get("/month/:company", (req, res, next)=> {
             return res.status(500).json({
                 code: 500,
                 message: catchError(err.errno)
-            })
+            }) 
         }
     });
 })
