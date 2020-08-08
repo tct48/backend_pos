@@ -4,11 +4,11 @@ var app = express();
 const bodyparser = require('body-parser');
 
 var mysql_connection = mysql.createConnection({
-    host:'ns117.hostinglotus.net',
-    user: 'dntcom_dao',
-    password: '123456@q!',
-    database: 'dntcom_landtransport',
-    multipleStatements:true   
+    host: "ns123.hostinglotus.net",
+    user: "deejung1_ketar",
+    password: "123456@q!",
+    database: "deejung1_pos",
+    multipleStatements: true, 
 })
 
 mysql_connection.connect((err)=>{
