@@ -23,16 +23,23 @@ router.get("/:company", (req, res, next) => {
     sql = "SELECT _id, dor, SUM(total) as total_price, status FROM receipt WHERE MONTH(dor)=" + (Number(dumb.getMonth())+1) + " AND company=" + company + " GROUP BY DAY(dor), status LIMIT 15";
     console.log(sql)
     mysql_connection.query(sql, (err, rows, field) => {
-        if (!err) {
+        sql="SELECT receipt._id, receipt.dor, SUM(IF(receipt.type=3,receipt_detail.price+10,receipt_detail.price+100)) AS vat \
+        FROM receipt, receipt_detail WHERE receipt._id = receipt_detail.receipt AND receipt_detail.name='ภาษี' AND company  LIKE '%" + company + "%'"
+        // console.log(sql)
+        mysql_connection.query(sql, (err, sub_rows, field)=>{
+            if (!err) {
                 return res.status(200).json({
                     items: rows,
+                    vat: sub_rows
                 })
         } else {
+            console.log("B")
             return res.status(500).json({
                 code: 500,
                 message: catchError(err.errno)
             })
         }
+        })
     });
 });
 
