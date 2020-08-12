@@ -21,10 +21,8 @@ router.get("/vat", (req, res, next)=>{
     let month = req.query["month"];
     let year = req.query["year"]
 
-    console.log(date)
-    sql="SELECT receipt.dor, receipt.title,  receipt.type, receipt_detail.price FROM receipt, receipt_detail WHERE receipt._id = receipt_detail.receipt \
-    AND receipt_detail.name='ภาษี' AND receipt.company = " + company + " AND DAY(receipt.dor)=" + date + " AND MONTH(receipt.dor)=" + month + " AND YEAR(receipt.dor)=" + year;
-    console.log(sql)
+    sql="SELECT receipt._id, receipt.dor, receipt.title, IF(receipt_detail.name='ค่าปรับ', receipt_detail.price,0) as fines,  receipt.type, receipt_detail.price FROM receipt, receipt_detail WHERE receipt._id = receipt_detail.receipt \
+    AND (receipt_detail.name='ภาษี' OR receipt_detail.name='ค่าปรับ') AND receipt.company = " + company + " AND DAY(receipt.dor)=" + date + " AND MONTH(receipt.dor)=" + month + " AND YEAR(receipt.dor)=" + year;
 
     mysql_connection.query(sql, (err, rows, field)=>{
         if(!err){
@@ -69,14 +67,12 @@ router.get("/:company", (req, res, next) => {
     let dumb = new Date();
     let company = req.params.company;
     sql = "SELECT _id, dor, SUM(total) as total_price, status FROM receipt WHERE MONTH(dor)=" + (Number(dumb.getMonth())+1) + " AND company=" + company + " GROUP BY DAY(dor), status LIMIT 15";
-    // console.log(sql)
     mysql_connection.query(sql, (err, rows, field) => {
             if (!err) {
                 return res.status(200).json({
                     items: rows,
                 })
         } else {
-            // console.log("B")
             return res.status(500).json({
                 code: 500,
                 message: catchError(err.errno)
