@@ -13,6 +13,54 @@ var mysql_connection = mysql.createConnection({
 
 mysql_connection.timeout=0;
 
+
+router.get("/vat", (req, res, next)=>{
+    let sql = "";
+    let company = req.query["company"];
+    let date = req.query["date"];
+    let month = req.query["month"];
+    let year = req.query["year"]
+
+    console.log(date)
+    sql="SELECT receipt.dor, receipt.title,  receipt.type, receipt_detail.price FROM receipt, receipt_detail WHERE receipt._id = receipt_detail.receipt \
+    AND receipt_detail.name='ภาษี' AND receipt.company = " + company + " AND DAY(receipt.dor)=" + date + " AND MONTH(receipt.dor)=" + month + " AND YEAR(receipt.dor)=" + year;
+    console.log(sql)
+
+    mysql_connection.query(sql, (err, rows, field)=>{
+        if(!err){
+            return res.status(200).json({
+                items: rows
+            })
+        }
+
+        return res.status(500).json({
+            code: 500,
+            message: catchError(err.errno)
+        })
+    })
+});
+
+router.get("/vat5days", (req, res, next)=> {
+    let sql="";
+    let company = req.query["company"]
+    sql="SELECT receipt.dor, SUM(IF(receipt.type=3,receipt_detail.price+10,receipt_detail.price+20)) as total_price FROM receipt, receipt_detail \
+    WHERE receipt._id = receipt_detail.receipt AND receipt_detail.name='ภาษี' AND receipt.company = " + company + " ORDER BY receipt.dor DESC LIMIT 5"
+
+    mysql_connection.query(sql, (err, rows, field)=>{
+        if(!err){
+            return res.status(200).json({
+                items: rows
+            })
+        }
+
+        return res.status(500).json({
+            code: 500,
+            message: catchError(err.errno)
+        })
+    })
+})
+
+
 // R => Retrieve All Receipt
 router.get("/:company", (req, res, next) => {
     let sql="";
@@ -21,25 +69,19 @@ router.get("/:company", (req, res, next) => {
     let dumb = new Date();
     let company = req.params.company;
     sql = "SELECT _id, dor, SUM(total) as total_price, status FROM receipt WHERE MONTH(dor)=" + (Number(dumb.getMonth())+1) + " AND company=" + company + " GROUP BY DAY(dor), status LIMIT 15";
-    console.log(sql)
+    // console.log(sql)
     mysql_connection.query(sql, (err, rows, field) => {
-        sql="SELECT receipt._id, receipt.dor, SUM(IF(receipt.type=3,receipt_detail.price+10,receipt_detail.price+100)) AS vat \
-        FROM receipt, receipt_detail WHERE receipt._id = receipt_detail.receipt AND receipt_detail.name='ภาษี' AND company  LIKE '%" + company + "%'"
-        // console.log(sql)
-        mysql_connection.query(sql, (err, sub_rows, field)=>{
             if (!err) {
                 return res.status(200).json({
                     items: rows,
-                    vat: sub_rows
                 })
         } else {
-            console.log("B")
+            // console.log("B")
             return res.status(500).json({
                 code: 500,
                 message: catchError(err.errno)
             })
         }
-        })
     });
 });
 
@@ -61,6 +103,7 @@ router.get("/month/:company", (req, res, next)=> {
         }
     });
 })
+
 
 function catchError(code) {
     if (code == "1062") {
