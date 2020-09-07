@@ -26,8 +26,8 @@ router.post('/', (req, res, next) => {
             model.receipt_no = rows.receipt_no+1;
             console.log(rows);
         }
-        var sql = "INSERT INTO receipt (receipt_no, customer, title, address, type, total, company, member, created, updated, status) VALUES (";
-        sql += "" + model.receipt_no + ", '" + model.customer + "', '"  + model.title + "', '" + model.address + "', " + model.type + ", " + model.total + ", " + model.company + ", " + model.member + ", " + model.created + ", " + model.updated + ", 1)";
+        var sql = "INSERT INTO receipt (receipt_no, customer, title, address, type, total, company, member, created, updated, status, view) VALUES (";
+        sql += "" + model.receipt_no + ", '" + model.customer + "', '"  + model.title + "', '" + model.address + "', " + model.type + ", " + model.total + ", " + model.company + ", " + model.member + ", " + model.created + ", " + model.updated + ", 1,1)";
         console.log(sql)
         mysql_connection.query(sql, (err, rows, fields) => {
             if (!err) {
@@ -89,7 +89,7 @@ router.get("/", (req, res, next) => {
         lp = req.query["lp"];
     }
 
-    let sql = "SELECT * FROM receipt";
+    let sql = "SELECT * FROM receipt WHERE view=1";
 
     if(req.query["company"]!="" && req.query["role"]!=""){
         company = Object.values(req.query["company"])[0];
@@ -296,23 +296,12 @@ router.put('/detail/:_id', (req, res) => {
 // D = Delete
 router.delete('/:_id', (req, res) => {
     let _id = req.params._id;
-
-    let sql = "DELETE FROM receipt WHERE _id = " + _id
+    let sql = "UPDATE receipt SET view=0 WHERE _id = " + _id;
     mysql_connection.query(sql, (err, rows, fields) => {
         if (!err) {
-            sql = "DELETE FROM receipt_detail WHERE receipt = " + _id;
-            mysql_connection.query(sql, (err, rows, fields) => {
-                if (!err) {
-                    return res.status(200).json({
-                        message: "ลบข้อมูลบริษัทสำเร็จ",
-                        affected: "ส่งผลกระทบกับ " + rows.affectedRows + " เรคคอร์ด"
-                    })
-                } else {
-                    return res.status(500).json({
-                        code: 500,
-                        message: catchError(err.errno)
-                    })
-                }
+            return res.status(200).json({
+                message: "ลบข้อมูลบริษัทสำเร็จ",
+                affected: "ส่งผลกระทบกับ " + rows.affectedRows + " เรคคอร์ด"
             })
         } else {
             return res.status(500).json({
