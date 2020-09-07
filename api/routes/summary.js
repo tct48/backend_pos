@@ -22,7 +22,7 @@ router.get("/vat", (req, res, next)=>{
     let year = req.query["year"]
 
     sql="SELECT receipt._id, receipt.dor, receipt.title, IF(receipt_detail.name='ค่าปรับ', receipt_detail.price,0) as fines,  receipt.type, receipt_detail.price FROM receipt, receipt_detail WHERE receipt._id = receipt_detail.receipt \
-    AND (receipt_detail.name='ภาษี' OR receipt_detail.name='ค่าปรับ') AND receipt.company = " + company + " AND DAY(receipt.dor)=" + date + " AND MONTH(receipt.dor)=" + month + " AND YEAR(receipt.dor)=" + year;
+    AND (receipt_detail.name='ภาษี' OR receipt_detail.name='ค่าปรับ') AND receipt.company = " + company + " AND DAY(receipt.dor)=" + date + " AND MONTH(receipt.dor)=" + month + " AND YEAR(receipt.dor)=" + year + " AND view=1";
 
     mysql_connection.query(sql, (err, rows, field)=>{
         if(!err){
@@ -66,7 +66,7 @@ router.get("/:company", (req, res, next) => {
     // SELECT dor, SUM(total) as total_price FROM receipt WHERE company=1 GROUP BY MONTH(dor) ORDER BY MONTH(dor) DESC LIMIT 7
     let dumb = new Date();
     let company = req.params.company;
-    sql = "SELECT _id, dor, SUM(total) as total_price, status FROM receipt WHERE MONTH(dor)=" + (Number(dumb.getMonth())+1) + " AND company=" + company + " GROUP BY DAY(dor), status LIMIT 15";
+    sql = "SELECT _id, dor, SUM(total) as total_price, status FROM receipt WHERE MONTH(dor)=" + (Number(dumb.getMonth())+1) + " AND view=1 AND company=" + company + " GROUP BY DAY(dor), status LIMIT 15";
     mysql_connection.query(sql, (err, rows, field) => {
             if (!err) {
                 return res.status(200).json({
@@ -85,7 +85,7 @@ router.get("/month/:company", (req, res, next)=> {
     let sql="";
     let company = req.params.company;
 
-    sql="SELECT _id, dor, SUM(total) as total_price FROM `receipt` WHERE company=" + company + " GROUP BY MONTH(dor) ORDER BY MONTH(dor) LIMIT 7";
+    sql="SELECT _id, dor, SUM(CASE WHEN view=1 THEN total END) AS total_price FROM receipt WHERE company=" + company + " AND view IN (0,1) GROUP BY MONTH(dor) ORDER BY MONTH(dor) LIMIT 7";
     mysql_connection.query(sql, (err, rows, field) => {
         if (!err) {
                 return res.status(200).json({

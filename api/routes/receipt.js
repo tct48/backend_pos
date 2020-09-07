@@ -193,11 +193,28 @@ router.get("/search", (req, res, next) => {
     });
 });
 
+router.get("/trash", (req, res, next)=>{
+    let sql="SELECT receipt._id,title, receipt_no,dor, customer,category.name AS type, company.name AS company,member, receipt.status, receipt.updated , member.name, total FROM receipt, member, company, category WHERE view=0 AND member._id = receipt.deleted_by AND company._id = receipt.company AND category._id = receipt.type"
+    mysql_connection.query(sql, (err, rows, field)=>{
+        if(!err){
+            return res.status(200).json({
+                total_items:rows.length,
+                items: rows
+            })
+        }else{
+            return res.status(500).json({
+                code: 500,
+                message: catchError(err.errno)
+            })
+        }
+    })
+})
+
 // R=> Retrive Receipt by ID
 router.get("/:_id", (req, res, next) => {
     let _id = req.params._id;
     let sql = "SELECT receipt._id,receipt.address, receipt.status,receipt.receipt_no,receipt. dor,receipt.customer,receipt.title,receipt.type,receipt.total,receipt.company,member.name as member,receipt.created,receipt.updated FROM receipt , member WHERE receipt.member=member._id AND receipt._id = " + _id;
-    console.log(sql)
+
     mysql_connection.query(sql, (err, rows, field) => {
         if (!err) {
             sql = "SELECT * FROM receipt_detail WHERE receipt = " + _id;
@@ -294,15 +311,42 @@ router.put('/detail/:_id', (req, res) => {
 })
 
 // D = Delete
-router.delete('/:_id', (req, res) => {
+router.patch('/:_id', (req, res) => {
     let _id = req.params._id;
-    console.log(req.body.user)
-    let sql = "UPDATE receipt SET view=0 WHERE _id = " + _id;
+    let sql = "UPDATE receipt SET view=" + req.body.view + ", deleted_by=" + req.body.user + " WHERE _id = " + _id;
     mysql_connection.query(sql, (err, rows, fields) => {
         if (!err) {
             return res.status(200).json({
                 message: "ลบข้อมูลบริษัทสำเร็จ",
                 affected: "ส่งผลกระทบกับ " + rows.affectedRows + " เรคคอร์ด"
+            })
+        } else {
+            return res.status(500).json({
+                code: 500,
+                message: catchError(err.errno)
+            })
+        }
+    })
+})
+
+router.delete('/:_id', (req, res)=>{
+    let _id = req.params._id;
+    let sql = "DELETE FROM receipt WHERE _id = " + _id;
+    mysql_connection.query(sql, (err, rows, field)=>{
+        if (!err) {
+            sql = "DELETE FROM receipt_detail WHERE receipt = " + _id;
+            mysql_connection.query(sql, (err, rows, field)=> {
+                if(!err){
+                    return res.status(200).json({
+                        message: "ลบข้อมูลบริษัทสำเร็จ",
+                        affected: "ส่งผลกระทบกับ " + rows.affectedRows + " เรคคอร์ด"
+                    })
+                }else{
+                    return res.status(500).json({
+                        code: 500,
+                        message: catchError(err.errno)
+                    })
+                }
             })
         } else {
             return res.status(500).json({
