@@ -89,7 +89,7 @@ router.get("/", (req, res, next) => {
         lp = req.query["lp"];
     }
 
-    let sql = "SELECT * FROM receipt WHERE view=1";
+    let sql = "SELECT * FROM receipt";
 
     if(req.query["company"]!="" && req.query["role"]!=""){
         company = Object.values(req.query["company"])[0];
@@ -97,7 +97,7 @@ router.get("/", (req, res, next) => {
         console.log(company)
         console.log(role)
         // 5 == all
-        sql += " WHERE company=" + company;
+        sql += " WHERE company=" + company + " AND view=1";
     }
     
     skip = sp * lp;
@@ -296,6 +296,7 @@ router.put('/detail/:_id', (req, res) => {
 // D = Delete
 router.delete('/:_id', (req, res) => {
     let _id = req.params._id;
+    console.log(req.body.user)
     let sql = "UPDATE receipt SET view=0 WHERE _id = " + _id;
     mysql_connection.query(sql, (err, rows, fields) => {
         if (!err) {
