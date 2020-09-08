@@ -133,13 +133,22 @@ router.get("/", (req, res, next) => {
 });
 
 router.get("/daily", (req, res, next) => {
-    let current_date = new Date();
-    let date = current_date.getDate();
-    let month = current_date.getMonth() + 1;
-    let year = current_date.getFullYear();
+    var current_date = new Date();
+    var date = current_date.getDate();
+    var month = current_date.getMonth() + 1;
+    var year = current_date.getFullYear();
+    var company=1;
+    if(req.query["date"] && req.query["month"] && req.query["year"]){
+        date = req.query["date"];
+        month = req.query["month"];
+        year = req.query["year"];
+        company = req.query["company"]
+    }
+
     var round;
     // 1095 1096
-    var sql = "SELECT receipt._id, dor, title, category.name AS type, total FROM receipt, category WHERE category._id = receipt.type AND DAY(dor)=" + date + " AND MONTH(dor)=" + month + " AND YEAR(dor)=" + year + " AND company=1 ORDER BY receipt._id";
+    var sql = "SELECT receipt._id,receipt.customer, dor, title, category.name AS type,status, total FROM receipt, category WHERE category._id = receipt.type AND DAY(dor)=" + date + " AND MONTH(dor)=" + month + " AND YEAR(dor)=" + year + " AND company=" + company + " ORDER BY receipt._id";
+
     mysql_connection.query(sql, (err, items, field) => {
         if (!err) {
             round = items.length;
