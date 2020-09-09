@@ -147,13 +147,32 @@ router.get("/daily", (req, res, next) => {
 
     var round;
     // 1095 1096
-    var sql = "SELECT receipt._id,receipt.customer, dor, title, category.name AS type,status, total FROM receipt, category WHERE category._id = receipt.type AND DAY(dor)=" + date + " AND MONTH(dor)=" + month + " AND YEAR(dor)=" + year + " AND company=" + company + " ORDER BY receipt._id";
+    var sql = "SELECT receipt AS receipt_id, receipt.dor, receipt.title, receipt.type,"
+    sql += "category.name AS type,"
+    sql += "SUM(CASE WHEN receipt_detail.name='ตรวจสภาพรถ' THEN price END) as inspection,"  
+    sql += "SUM(CASE WHEN receipt_detail.name='พรบ' THEN price END) as act,"  
+    sql += "SUM(CASE WHEN receipt_detail.name='ภาษี' THEN price END) as vat,"  
+    sql += "SUM(CASE WHEN receipt_detail.name='ค่าบริการ' THEN price END) as fee,"
+    sql += "SUM(CASE WHEN receipt_detail.name='ประกันภัย' THEN price END) as insurance,"
+    sql += "SUM(CASE WHEN receipt_detail.name='CNG' THEN price END) as cng,"
+    sql += "SUM(CASE WHEN receipt_detail.name='LPG' THEN price END) as lpg,"
+    sql += "SUM(CASE WHEN receipt_detail.name='ฝากต่อ' THEN price END) as deposit,"
+    sql += "IF(status=1,'เงินสด',IF(status=2,'โอนธนาคาร','เกิดข้อผิดพลาด')) as status,"
+    sql += "receipt.total,"
+    sql += "IF(SUM(CASE WHEN receipt_detail.name='ภาษี' THEN price END) IS NULL , 0, IF(receipt.type=3,10,20)) + SUM(CASE WHEN receipt_detail.name='ภาษี' THEN price END)  as detuct,"
+    sql += "receipt.total - (IF(SUM(CASE WHEN receipt_detail.name='ภาษี' THEN price END) IS NULL , 0, IF(receipt.type=3,10,20)) + SUM(CASE WHEN receipt_detail.name='ภาษี' THEN price END)) as balance "
+    sql += "FROM receipt_detail , receipt, category"
+    sql += " WHERE receipt._id = receipt_detail.receipt"
+    sql += " AND receipt.view = 1"
+    sql += " AND receipt.company = " + company
+    sql += " AND receipt.type = category._id AND DAY(dor)=" + date + " AND MONTH(dor)=" + month + " AND YEAR(dor)=" + year
+    sql += " GROUP BY receipt_detail.receipt"
+
 
     mysql_connection.query(sql, (err, items, field) => {
         if (!err) {
-            round = items.length;
             return res.status(200).json({
-                total_items: round,
+                total_items: items.length,
                 items: items
             })
         }
