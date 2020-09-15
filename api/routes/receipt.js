@@ -164,7 +164,7 @@ router.get("/daily", (req, res, next) => {
     sql += "FROM receipt_detail , receipt, category"
     sql += " WHERE receipt._id = receipt_detail.receipt"
     sql += " AND receipt.view = 1"
-    sql += " AND receipt.company = " + company
+    sql += " AND receipt.company = " + company 
     sql += " AND receipt.type = category._id AND DAY(dor)=" + date + " AND MONTH(dor)=" + month + " AND YEAR(dor)=" + year
     sql += " GROUP BY receipt_detail.receipt"
 
