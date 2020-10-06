@@ -66,7 +66,7 @@ router.get("/:company", (req, res, next) => {
     // SELECT dor, SUM(total) as total_price FROM receipt WHERE company=1 GROUP BY MONTH(dor) ORDER BY MONTH(dor) DESC LIMIT 7
     let dumb = new Date();
     let company = req.params.company;
-    sql = "SELECT _id, dor, SUM(total) as total_price, status FROM receipt WHERE MONTH(dor)=" + (Number(dumb.getMonth())+1) + " AND view=1 AND company=" + company + " GROUP BY DAY(dor), status LIMIT 40";
+    sql = "SELECT dor, IF(status=1,total,0) as cash, IF(status=2,total,0) as bank FROM receipt WHERE company=" + company + " GROUP BY DATE(dor) ORDER BY _id DESC LIMIT 15"
     console.log(sql);
     mysql_connection.query(sql, (err, rows, field) => {
             if (!err) {
@@ -86,7 +86,7 @@ router.get("/month/:company", (req, res, next)=> {
     let sql="";
     let company = req.params.company;
 
-    sql="SELECT _id, dor, SUM(CASE WHEN view=1 THEN total END) AS total_price FROM receipt WHERE company=" + company + " AND view IN (0,1) GROUP BY MONTH(dor) ORDER BY MONTH(dor) LIMIT 7";
+    sql="SELECT _id, dor, SUM(CASE WHEN view=1 THEN total END) AS cash FROM receipt WHERE company=" + company + " AND view IN (0,1) GROUP BY MONTH(dor) ORDER BY MONTH(dor) LIMIT 7";
     mysql_connection.query(sql, (err, rows, field) => {
         if (!err) {
                 return res.status(200).json({

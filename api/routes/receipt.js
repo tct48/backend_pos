@@ -48,6 +48,19 @@ router.post('/', (req, res, next) => {
 
 
 })
+
+router.delete('/update/:_id', (req, res, next) => {
+    let _id = req.params._id;
+    let sql = "DELETE FROM receipt_detail WHERE receipt = " + _id;
+    mysql_connection.query(sql, (err,rows,fields) => {
+        if(!err){
+            return res.status(200).json({
+                message:"ลบข้อมูลสำเร็จ"
+            })
+        }
+    })
+})
+
 // C=> Created Detail Receipt
 router.post('/detail/:_id', (req, res, next) => {
     let model = req.body;
@@ -170,6 +183,7 @@ router.get("/daily", (req, res, next) => {
     sql += " AND receipt.type = category._id AND DAY(dor)=" + date + " AND MONTH(dor)=" + month + " AND YEAR(dor)=" + year
     sql += " GROUP BY receipt_detail.receipt"
 
+    console.log(sql)
 
     mysql_connection.query(sql, (err, items, field) => {
         if (!err) {
@@ -326,6 +340,23 @@ router.put('/', (req, res) => {
             return res.status(500).json({
                 code: 500,
                 message: catchError(err.errno)
+            })
+        }
+    })
+})
+
+router.put('/total', (req, res) => {
+    let model = req.body;
+    let sql = "UPDATE receipt SET total=" + model.total + " WHERE _id=" + model._id;
+    mysql_connection.query(sql, (err, rows, field) => {
+        if (!err) {
+            return res.status(200).json({
+                receipt: rows
+            })
+        } else {
+            return res.status(500).json({
+                code: 500,
+                message: catchError(err.err)
             })
         }
     })
