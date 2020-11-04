@@ -17,7 +17,7 @@ mysql_connection.connect((err)=>{
     }else{
         console.log("Database connection failed\n Error: " + JSON.stringify(err,undefined,2));
     }
-})
+}) 
 
 app.listen(3000,()=>{
     console.log('Express Server is running at port 3000');
