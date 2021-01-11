@@ -4,9 +4,12 @@ const mysql = require("mysql");
 
 // ประกาศตัวแปร แบบ Global
 var mysql_connection = mysql.createConnection({
-    host: "ns123.hostinglotus.net",
-    user: "deejung1_ketar",
-    password: "123456@q!",
+    host:"localhost",
+    user:"root",
+    password:'',
+    // host: "ns123.hostinglotus.net",
+    // user: "deejung1_ketar",
+    // password: "123456@q!",
     database: "deejung1_pos",
     multipleStatements: true,
 });
@@ -54,7 +57,7 @@ router.post('/', (req, res, next) => {
 
     });
 
-    mysql_connection.query({sql:sql, timeout: 3000}, (err, rows, fields) => {
+    mysql_connection.query({sql:sql, timeout: 30000}, (err, rows, fields) => {
         model.receipt_no = 1;
         if (rows.receipt_no) {
             model.receipt_no = rows.receipt_no + 1;
@@ -63,7 +66,7 @@ router.post('/', (req, res, next) => {
         var sql = "INSERT INTO receipt (receipt_no, customer, title, address, type, total, company, member, created, updated, status, view) VALUES (";
         sql += "" + model.receipt_no + ", '" + model.customer + "', '" + model.title + "', '" + model.address + "', " + model.type + ", " + model.total + ", " + model.company + ", " + model.member + ", " + model.created + ", " + model.updated + ", 1,1)";
         console.log(sql)
-        mysql_connection.query({sql:sql, timeout: 3000}, (err, rows, fields) => {
+        mysql_connection.query({sql:sql, timeout: 30000}, (err, rows, fields) => {
             if (!err) {
                 
                 return res.status(200).json({
@@ -129,7 +132,7 @@ router.delete('/update/:_id', (req, res, next) => {
 
     });
 
-    mysql_connection.query({sql:sql, timeout: 3000}, (err,rows,fields) => {
+    mysql_connection.query({sql:sql, timeout: 30000}, (err,rows,fields) => {
         if(!err){
             
             return res.status(200).json({
@@ -191,7 +194,7 @@ router.post('/detail/:_id', (req, res, next) => {
     for (let i = 0; i < round; i++) {
         sql = "INSERT INTO receipt_detail (name, price, receipt) VALUES ('" + model[i].name + "', " + model[i].price + " , " + _id + ")";    
 
-        mysql_connection.query({sql:sql, timeout: 3000}, (err, rows, fields) => {
+        mysql_connection.query({sql:sql, timeout: 30000}, (err, rows, fields) => {
             if (!err) {
                 if (i == round - 1) {
                     
@@ -282,11 +285,11 @@ router.get("/", (req, res, next) => {
     });
     
 
-    mysql_connection.query({sql:sql, timeout: 3000}, (err, rows, field) => {
+    mysql_connection.query({sql:sql, timeout: 30000}, (err, rows, field) => {
         if (!err) {
             sql += " ORDER BY _id DESC";
             sql += " LIMIT " + skip + ", " + lp;
-            mysql_connection.query({sql:sql, timeout: 3000}, (err, sub_rows, field) => {
+            mysql_connection.query({sql:sql, timeout: 30000}, (err, sub_rows, field) => {
                 if (!err) {
                     
                     return res.status(200).json({
@@ -392,7 +395,7 @@ router.get("/daily", (req, res, next) => {
 
     });
 
-    mysql_connection.query({sql:sql, timeout: 3000}, (err, items, field) => {
+    mysql_connection.query({sql:sql, timeout: 30000}, (err, items, field) => {
         if (!err) {
             
             return res.status(200).json({
@@ -449,7 +452,7 @@ router.get("/dailyDetail/:_id", (req, res, next) => {
 
     });
 
-    mysql_connection.query({sql:sql, timeout: 3000}, (err, items, field) => {
+    mysql_connection.query({sql:sql, timeout: 30000}, (err, items, field) => {
         if (!err) {
             
             return res.status(200).json({
@@ -541,11 +544,11 @@ router.get("/search", (req, res, next) => {
 
     });
 
-    mysql_connection.query({sql:sql, timeout: 3000}, (err, rows, field) => {
+    mysql_connection.query({sql:sql, timeout: 30000}, (err, rows, field) => {
         if (!err) {
             sql += " ORDER BY _id DESC";
             sql += " LIMIT " + skip + ", " + lp;
-            mysql_connection.query({sql:sql, timeout: 3000}, (err, sub_rows, field) => {
+            mysql_connection.query({sql:sql, timeout: 30000}, (err, sub_rows, field) => {
                 if (!err) {
                     
                     return res.status(200).json({
@@ -615,7 +618,7 @@ router.get("/trash", (req, res, next) => {
 
     });
 
-    mysql_connection.query({sql:sql, timeout: 3000}, (err, rows, field) => {
+    mysql_connection.query({sql:sql, timeout: 30000}, (err, rows, field) => {
         if (!err) {
             
             return res.status(200).json({
@@ -678,10 +681,10 @@ router.get("/:_id", (req, res, next) => {
 
     });
 
-    mysql_connection.query({sql:sql, timeout: 3000}, (err, rows, field) => {
+    mysql_connection.query({sql:sql, timeout: 30000}, (err, rows, field) => {
         if (!err) {
             sql = "SELECT * FROM receipt_detail WHERE receipt = " + _id;
-            mysql_connection.query({sql:sql, timeout: 3000}, (err, sub_rows, field) => {
+            mysql_connection.query({sql:sql, timeout: 30000}, (err, sub_rows, field) => {
                 if (!err) {
                     
                     return res.status(200).json({
@@ -760,7 +763,7 @@ router.put('/', (req, res) => {
 
     });
 
-    mysql_connection.query({sql:sql, timeout: 3000}, (err, rows, fields) => {
+    mysql_connection.query({sql:sql, timeout: 30000}, (err, rows, fields) => {
         if (!err) {
             
             return res.status(200).json({
@@ -822,7 +825,7 @@ router.put('/total', (req, res) => {
 
     });
 
-    mysql_connection.query({sql:sql, timeout: 3000}, (err, rows, field) => {
+    mysql_connection.query({sql:sql, timeout: 30000}, (err, rows, field) => {
         if (!err) {
             
             return res.status(200).json({
@@ -885,7 +888,7 @@ router.put('/status', (req, res) => {
 
     });
 
-    mysql_connection.query({sql:sql, timeout: 3000}, (err, rows, field) => {
+    mysql_connection.query({sql:sql, timeout: 30000}, (err, rows, field) => {
         if (!err) {
             
             return res.status(200).json({
@@ -954,7 +957,7 @@ router.put('/detail/:_id', (req, res) => {
     for (let i = 0; i < round; i++) {
         sql = "UPDATE receipt_detail SET name='" + model[i].name + "', price=" + model[i].price + " WHERE _id=" + _id;
 
-        mysql_connection.query({sql:sql, timeout: 3000}, (err, rows, fields) => {
+        mysql_connection.query({sql:sql, timeout: 30000}, (err, rows, fields) => {
             if (!err) {
                 
                 if (i == round - 1) {
@@ -1020,7 +1023,7 @@ router.patch('/:_id', (req, res) => {
 
     });
 
-    mysql_connection.query({sql:sql, timeout: 3000}, (err, rows, fields) => {
+    mysql_connection.query({sql:sql, timeout: 30000}, (err, rows, fields) => {
         if (!err) {
             
             return res.status(200).json({
@@ -1083,10 +1086,10 @@ router.delete('/:_id', (req, res) => {
 
     });
 
-    mysql_connection.query({sql:sql, timeout: 3000}, (err, rows, field) => {
+    mysql_connection.query({sql:sql, timeout: 30000}, (err, rows, field) => {
         if (!err) {
             sql = "DELETE FROM receipt_detail WHERE receipt = " + _id;
-            mysql_connection.query({sql:sql, timeout: 3000}, (err, rows, field) => {
+            mysql_connection.query({sql:sql, timeout: 30000}, (err, rows, field) => {
                 if (!err) {
                     
                     return res.status(200).json({

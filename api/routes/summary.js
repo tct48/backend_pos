@@ -4,9 +4,12 @@ const mysql = require("mysql");
 
 // ประกาศตัวแปร แบบ Global
 var mysql_connection = mysql.createConnection({
-    host: "ns123.hostinglotus.net",
-    user: "deejung1_ketar",
-    password: "123456@q!",
+    host:"localhost",
+    user:"root",
+    password:'',
+    // host: "ns123.hostinglotus.net",
+    // user: "deejung1_ketar",
+    // password: "123456@q!",
     database: "deejung1_pos",
     multipleStatements: true,
 });
