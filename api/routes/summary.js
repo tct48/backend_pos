@@ -11,7 +11,7 @@ var mysql_connection = mysql.createConnection({
     multipleStatements: true,
 });
 
-mysql_connection.timeout=0;
+// mysql_connection.timeout=0;
 
 
 router.get("/vat", (req, res, next)=>{
@@ -23,14 +23,15 @@ router.get("/vat", (req, res, next)=>{
 
     sql="SELECT receipt._id, receipt.dor, receipt.title, IF(receipt_detail.name='ค่าปรับ', receipt_detail.price,0) as fines,  receipt.type, receipt_detail.price FROM receipt, receipt_detail WHERE receipt._id = receipt_detail.receipt \
     AND (receipt_detail.name='ภาษี' OR receipt_detail.name='ค่าปรับ') AND receipt.company = " + company + " AND DAY(receipt.dor)=" + date + " AND MONTH(receipt.dor)=" + month + " AND YEAR(receipt.dor)=" + year + " AND view=1";
-
+    mysql_connection.connect();
     mysql_connection.query(sql, (err, rows, field)=>{
         if(!err){
+            mysql_connection.end();
             return res.status(200).json({
                 items: rows
             })
         }
-
+        mysql_connection.end();
         return res.status(500).json({
             code: 500,
             message: catchError(err.errno)
@@ -43,14 +44,16 @@ router.get("/vat5days", (req, res, next)=> {
     let company = req.query["company"]
     sql="SELECT receipt.dor, SUM(IF(receipt.type=3,receipt_detail.price+10,receipt_detail.price+20)) as total_price FROM receipt, receipt_detail \
     WHERE receipt._id = receipt_detail.receipt AND receipt_detail.name='ภาษี' AND receipt.company = " + company + " ORDER BY receipt.dor DESC LIMIT 5"
-
+    mysql_connection.connect();
     mysql_connection.query(sql, (err, rows, field)=>{
         if(!err){
+            mysql_connection.end();
             return res.status(200).json({
                 items: rows
             })
         }
 
+        mysql_connection.end();
         return res.status(500).json({
             code: 500,
             message: catchError(err.errno)
@@ -68,12 +71,15 @@ router.get("/:company", (req, res, next) => {
     let company = req.params.company;
     sql = "SELECT dor, IF(status=1,total,0) as cash, IF(status=2,total,0) as bank FROM receipt WHERE company=" + company + " GROUP BY DATE(dor) ORDER BY _id DESC LIMIT 15"
     console.log(sql);
+    mysql_connection.connect();
     mysql_connection.query(sql, (err, rows, field) => {
             if (!err) {
+                mysql_connection.end();
                 return res.status(200).json({
                     items: rows,
                 })
         } else {
+            mysql_connection.end();
             return res.status(500).json({
                 code: 500,
                 message: catchError(err.errno)
@@ -87,12 +93,15 @@ router.get("/month/:company", (req, res, next)=> {
     let company = req.params.company;
 
     sql="SELECT _id, dor, SUM(CASE WHEN view=1 THEN total END) AS cash FROM receipt WHERE company=" + company + " AND view IN (0,1) GROUP BY MONTH(dor) ORDER BY MONTH(dor) LIMIT 7";
+    mysql_connection.connect();
     mysql_connection.query(sql, (err, rows, field) => {
         if (!err) {
+            mysql_connection.end();
                 return res.status(200).json({
                     items: rows,
                 })
         } else {
+            mysql_connection.end();
             return res.status(500).json({
                 code: 500,
                 message: catchError(err.errno)

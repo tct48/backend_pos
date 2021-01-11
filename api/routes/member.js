@@ -12,7 +12,7 @@ var mysql_connection = mysql.createConnection({
     database: "deejung1_pos",
     multipleStatements: true,
 });
-mysql_connection.timeout=0;
+// mysql_connection.timeout=0;
 
 // C => Created || SIGNUP
 router.post('/', (req, res, next) => {
@@ -31,10 +31,12 @@ router.post('/', (req, res, next) => {
         sql += "'" + model.name + "', '" + model.username + "', '" + hash + "', " + model.role + ", " + 1 + ", " + model.company
         sql += ", " + model.created + ", " + model.updated + ")";
         model.password = hash;
+        mysql_connection.connect();
         mysql_connection.query(sql, (err, rows, fields) => {
             model.created = new Date(model.created);
             model.updated = new Date(model.updated);
             if (!err) {
+                mysql_connection.end();
                 return res.status(200).json({
                     item: rows.insertId,
                     detail: model
@@ -69,6 +71,7 @@ router.get("/", (req, res, next) => {
     else
         sql = "SELECT * FROM member WHERE member.status!=0 AND company=" + company;
     console.log(sql)
+    mysql_connection.connect();
     mysql_connection.query(sql, (err, rows, field) => {
         if (!err) {
             var total_items = rows.length;
@@ -80,6 +83,7 @@ router.get("/", (req, res, next) => {
                 FROM member, company WHERE member.status!=0 AND company="+ company + " AND member.company=company._id LIMIT " + skip + "," + lp;
             console.log(sql)
             mysql_connection.query(sql, (err, rows, field) => {
+                mysql_connection.end();
                 return res.status(200).json({
                     total_items: total_items,
                     items: rows,
@@ -87,6 +91,7 @@ router.get("/", (req, res, next) => {
             })
         } else {
             console.log(err)
+            mysql_connection.end();
             return res.status(500).json({
                 code: 500,
                 text: err.name
@@ -100,9 +105,10 @@ router.get("/:_id", (req, res, next) => {
     let _id = req.params._id;
 
     var sql = "SELECT * FROM member WHERE _id = " + _id;
-
+    mysql_connection.connect();
     mysql_connection.query(sql, (err, rows, field) => {
         if (!err) {
+            mysql_connection.end();
             return res.status(200).json({
                 total_items: rows.length,
                 items: rows,
@@ -126,9 +132,10 @@ router.put('/', (req, res) => {
     bcrypt.hash(model.password, 10, (err, hash) => {
         let sql = "UPDATE member SET name='" + model.name + "', username='" + model.username + "', password='" + hash + "', role=" + model.role + ", status=" + model.status + ",company=" + model.company + ", updated=" + model.updated + "";
         sql += " WHERE _id = " + model._id;
-
+        mysql_connection.connect();
         mysql_connection.query(sql, (err, rows, fields) => {
             if (!err) {
+                mysql_connection.end();
                 return res.status(200).json({
                     item: model
                 })
@@ -147,8 +154,10 @@ router.delete('/:_id', (req, res) => {
     let _id = req.params._id;
 
     var sql = "UPDATE member SET status=0 WHERE _id = " + _id
+    mysql_connection.connect();
     mysql_connection.query(sql, (err, rows, fields) => {
         if (!err) {
+            mysql_connection.end();
             return res.status(200).json({
                 message: "ลบข้อมูลพนักงานสำเร็จ",
                 affected: "ส่งผลกระทบกับ " + rows.affectedRows + " เรคคอร์ด"
@@ -166,6 +175,7 @@ router.delete('/:_id', (req, res) => {
 router.post("/login", (req, res, next) => {
     let model = req.body;
     sql = "SELECT _id, username, password, name, role, company FROM member WHERE username ='" + model.username + "'";
+    mysql_connection.connect();
     mysql_connection.query(sql, (err, rows, field) => {
         if (err) {
             return res.status(500).json({
@@ -207,6 +217,7 @@ router.post("/login", (req, res, next) => {
                 sql = "UPDATE member SET updated = " + new Date().getTime();
                 mysql_connection.query(sql, (err, sub_rows, field) => {
                     if (!err) {
+                        mysql_connection.end();
                         const token = jwt.sign({
                                 username: rows[0].username,
                                 userId: rows[0]._id,
@@ -224,6 +235,7 @@ router.post("/login", (req, res, next) => {
                             accessToken: token
                         })
                     }
+                    mysql_connection.end();
                     return res.status(500).json({
                         code: 500,
                         message: catchError(err.errno)

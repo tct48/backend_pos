@@ -10,7 +10,7 @@ var mysql_connection = mysql.createConnection({
   database: "deejung1_pos",
   multipleStatements: true,
 });
-mysql_connection.timeout=0;
+// mysql_connection.timeout=0;
 
 // C => Created Receipt
 router.post('/', (req, res, next)=>{
@@ -18,14 +18,16 @@ router.post('/', (req, res, next)=>{
 
     var sql = "INSERT INTO category (name) VALUES (";
     sql += "" + model.name + ")";
-
+    mysql_connection.connect();
     mysql_connection.query(sql, (err, rows, fields)=>{
         if(!err){
+            mysql_connection.end();
             return res.status(200).json({
                 item: rows.insertId,
                 detail: model
             })
         }else{
+            mysql_connection.end();
             return res.status(500).json({
                 code: 500,
                 message: catchError(err.errno)
@@ -37,14 +39,16 @@ router.post('/', (req, res, next)=>{
 // R => Retrieve All Receipt
 router.get("/", (req, res, next) => {
     let sql = "SELECT * FROM category";
-  
+    mysql_connection.connect();
     mysql_connection.query(sql, (err, rows, field) => {
       if(!err){
+        mysql_connection.end();
           return res.status(200).json({
               total_items: rows.length,
               items: rows,
             });
       }else{
+        mysql_connection.end();
           return res.status(500).json({
               code: 500,
               message: catchError(err.errno)
@@ -59,13 +63,15 @@ router.put('/', (req, res)=>{
 
     var sql = "UPDATE category SET name=" + model.name;
     sql += " WHERE _id=" + model._id
-
+    mysql_connection.connect();
     mysql_connection.query(sql,(err,rows,fields)=>{
         if(!err){
+            mysql_connection.end();
             return res.status(200).json({
                 item: model
             })
         }else{
+            mysql_connection.end();
             return res.status(500).json({
                 code: 500,
                 message: catchError(err.errno)
@@ -79,13 +85,16 @@ router.delete('/:_id', (req, res)=>{
     let _id = req.params._id;
 
     let sql = "DELETE FROM category WHERE _id = " + _id
+    mysql_connection.connect();
     mysql_connection.query(sql,(err,rows,fields)=>{
         if(!err){
+            mysql_connection.end();
             return res.status(200).json({
                 message: "ลบข้อมูลประเภทรถสำเร็จ",
                 affected: "ส่งผลกระทบกับ " + rows.affectedRows + " เรคคอร์ด"
             })
         }else{
+            mysql_connection.end();
             return res.status(500).json({
                 code: 500,
                 message: catchError(err.errno)

@@ -12,7 +12,7 @@ var mysql_connection = mysql.createConnection({
     database: "deejung1_pos",
     multipleStatements: true,
 });
-mysql_connection.timeout=0;
+// mysql_connection.timeout=0;
 
 // C => Created
 router.post('/', (req, res, next)=>{
@@ -20,14 +20,16 @@ router.post('/', (req, res, next)=>{
 
     var sql = "INSERT INTO company (name) VALUES (";
     sql += "'" + model.name + "')";
-
+    mysql_connection.connect();
     mysql_connection.query(sql, (err, rows, fields)=>{
         if(!err){
+            mysql_connection.end();
             return res.status(200).json({
                 item: rows.insertId,
                 detail: model
             })
         }else{
+            mysql_connection.end();
             return res.status(500).json({
                 code: 500,
                 message: catchError(err.errno)
@@ -50,14 +52,16 @@ router.get("/", (req, res, next) => {
     skip = sp * lp;
   
     var sql = "SELECT * FROM company LIMIT " + sp + "," + lp;
-  
+    mysql_connection.connect();
     mysql_connection.query(sql, (err, rows, field) => {
       if(!err){
+        mysql_connection.end();
           return res.status(200).json({
               total_items: rows.length,
               items: rows,
             });
       }else{
+        mysql_connection.end();
           return res.status(500).json({
               code: 500,
               text: err.name
@@ -72,13 +76,15 @@ router.put('/', (req, res)=>{
 
     let sql = "UPDATE company SET name='" + model.name + "'";
     sql+= " WHERE _id = " + model._id;
-
+    mysql_connection.connect();
     mysql_connection.query(sql,(err,rows,fields)=>{
         if(!err){
+            mysql_connection.end();
             return res.status(200).json({
                 item: model
             })
         }else{
+            mysql_connection.end();
             return res.status(500).json({
                 code: 500,
                 message: catchError(err.errno)
@@ -92,13 +98,16 @@ router.delete('/:_id', (req, res)=>{
     let _id = req.params._id;
 
     var sql = "DELETE FROM company WHERE _id = " + _id
+    mysql_connection.connect();
     mysql_connection.query(sql,(err,rows,fields)=>{
         if(!err){
+            mysql_connection.end();
             return res.status(200).json({
                 message: "ลบข้อมูลบริษัทสำเร็จ",
                 affected: "ส่งผลกระทบกับ " + rows.affectedRows + " เรคคอร์ด"
             })
         }else{
+            mysql_connection.end();
             return res.status(500).json({
                 message: "เกิดข้อผิดพลาด"
             })
