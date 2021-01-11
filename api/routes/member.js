@@ -42,6 +42,7 @@ router.post('/', (req, res, next) => {
                     detail: model
                 })
             } else {
+                mysql_connection.end();
                 return res.status(500).json({
                     code: 500,
                     message: catchError(err.errno)
@@ -114,6 +115,7 @@ router.get("/:_id", (req, res, next) => {
                 items: rows,
             });
         } else {
+            mysql_connection..end();
             return res.status(500).json({
                 code: 500,
                 text: err.name
@@ -140,6 +142,7 @@ router.put('/', (req, res) => {
                     item: model
                 })
             } else {
+                mysql_connection.end();
                 return res.status(500).json({
                     code: 500,
                     message: catchError(err.errno)
@@ -163,6 +166,7 @@ router.delete('/:_id', (req, res) => {
                 affected: "ส่งผลกระทบกับ " + rows.affectedRows + " เรคคอร์ด"
             })
         } else {
+            mysql_connection.end();
             return res.status(500).json({
                 code: 500,
                 message: catchError(err.errno)
@@ -178,6 +182,7 @@ router.post("/login", (req, res, next) => {
     mysql_connection.connect();
     mysql_connection.query(sql, (err, rows, field) => {
         if (err) {
+            mysql_connection.end();
             return res.status(500).json({
                 code: 500,
                 message: catchError(err.errno)
@@ -185,6 +190,7 @@ router.post("/login", (req, res, next) => {
         }
 
         if (!rows[0]) {
+            mysql_connection.end();
             return res.status(500).json({
                 code: 500,
                 message: "model is " + err
@@ -192,6 +198,7 @@ router.post("/login", (req, res, next) => {
         }
 
         if (!rows[0].password) {
+            mysql_connection.end();
             return res.status(500).json({
                 code: 500,
                 message: "model is " + err
@@ -200,6 +207,7 @@ router.post("/login", (req, res, next) => {
 
         bcrypt.compare(model.password, rows[0].password, (err, result) => {
             if (err) {
+                mysql_connection.end();
                 return res.status(500).json({
                     code: 500,
                     message: catchError(err.errno)
@@ -207,6 +215,7 @@ router.post("/login", (req, res, next) => {
             }
 
             if (result == false) {
+                mysql_connection.end();
                 return res.status(500).json({
                     code: 500,
                     message: "Username หรือ Password ไม่ถูกต้อง !"
