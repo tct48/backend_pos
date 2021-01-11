@@ -115,7 +115,7 @@ router.get("/:_id", (req, res, next) => {
                 items: rows,
             });
         } else {
-            mysql_connection..end();
+            mysql_connection.end();
             return res.status(500).json({
                 code: 500,
                 text: err.name
