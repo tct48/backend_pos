@@ -10,7 +10,7 @@ var mysql_connection = mysql.createConnection({
   database: "deejung1_pos",
   multipleStatements: true,
 });
-// mysql_connection.timeout=0;
+// mysql_connection.timeout=5000;
 
 // C => Created Receipt
 router.post('/', (req, res, next)=>{
@@ -18,43 +18,126 @@ router.post('/', (req, res, next)=>{
 
     var sql = "INSERT INTO category (name) VALUES (";
     sql += "" + model.name + ")";
-    mysql_connection.connect();
-    mysql_connection.query(sql, (err, rows, fields)=>{
+    
+    //- Error listener
+    mysql_connection.on('error', function(err) {
+        //- The server close the connection.
+        if(err.code === "PROTOCOL_CONNECTION_LOST"){    
+            console.log("/!\\ 1Cannot establish a connection with the database. /!\\ ("+err.code+")");
+            mysql_connection = reconnect(mysql_connection.connect());
+        }
+
+        //- Connection in closing
+        else if(err.code === "PROTOCOL_ENQUEUE_AFTER_QUIT"){
+            console.log("/!\\ 2Cannot establish a connection with the database. /!\\ ("+err.code+")");
+            mysql_connection = reconnect(mysql_connection.connect());
+        }
+
+        //- Fatal error : connection variable must be recreated
+        else if(err.code === "PROTOCOL_ENQUEUE_AFTER_FATAL_ERROR"){
+            console.log("/!\\ 3Cannot establish a connection with the database. /!\\ ("+err.code+")");
+            mysql_connection = reconnect(mysql_connection.connect());
+        }
+
+        //- Error because a connection is already being established
+        else if(err.code === "PROTOCOL_ENQUEUE_HANDSHAKE_TWICE"){
+            console.log("/!\\ 4Cannot establish a connection with the database. /!\\ ("+err.code+")");
+        }
+
+        //- Anything else
+        else{
+            console.log("/!\\ Cannot establish a connection with the database. /!\\ ("+err.code+")");
+            mysql_connection = reconnect(mysql_connection.connect());
+        }
+
+    });
+
+    mysql_connection.query({sql:sql, timeout: 3000}, (err, rows, fields)=>{
         if(!err){
-            mysql_connection.end();
+            
             return res.status(200).json({
                 item: rows.insertId,
                 detail: model
             })
         }else{
-            mysql_connection.end();
+            
             return res.status(500).json({
                 code: 500,
                 message: catchError(err.errno)
             })
         }
-    })
+    });
+
+    setTimeout(function(){
+        mysql_connection.on('connect', function(){
+            mysql_connection.destroy();
+            console.log("Database is alreasy connect destroy");
+        })
+    },2000);
+
+    return;
 })
 
 // R => Retrieve All Receipt
 router.get("/", (req, res, next) => {
     let sql = "SELECT * FROM category";
-    mysql_connection.connect();
-    mysql_connection.query(sql, (err, rows, field) => {
+    //- Error listener
+    mysql_connection.on('error', function(err) {
+        //- The server close the connection.
+        if(err.code === "PROTOCOL_CONNECTION_LOST"){    
+            console.log("/!\\ 1Cannot establish a connection with the database. /!\\ ("+err.code+")");
+            mysql_connection = reconnect(mysql_connection.connect());
+        }
+
+        //- Connection in closing
+        else if(err.code === "PROTOCOL_ENQUEUE_AFTER_QUIT"){
+            console.log("/!\\ 2Cannot establish a connection with the database. /!\\ ("+err.code+")");
+            mysql_connection = reconnect(mysql_connection.connect());
+        }
+
+        //- Fatal error : connection variable must be recreated
+        else if(err.code === "PROTOCOL_ENQUEUE_AFTER_FATAL_ERROR"){
+            console.log("/!\\ 3Cannot establish a connection with the database. /!\\ ("+err.code+")");
+            mysql_connection = reconnect(mysql_connection.connect());
+        }
+
+        //- Error because a connection is already being established
+        else if(err.code === "PROTOCOL_ENQUEUE_HANDSHAKE_TWICE"){
+            console.log("/!\\ 4Cannot establish a connection with the database. /!\\ ("+err.code+")");
+        }
+
+        //- Anything else
+        else{
+            console.log("/!\\ Cannot establish a connection with the database. /!\\ ("+err.code+")");
+            mysql_connection = reconnect(mysql_connection.connect());
+        }
+
+    });
+
+    mysql_connection.query({sql:sql, timeout: 3000}, (err, rows, field) => {
       if(!err){
-        mysql_connection.end();
+        
           return res.status(200).json({
               total_items: rows.length,
               items: rows,
             });
       }else{
-        mysql_connection.end();
+        
           return res.status(500).json({
               code: 500,
               message: catchError(err.errno)
           })
       }
     });
+
+    setTimeout(function(){
+        mysql_connection.on('connect', function(){
+            mysql_connection.destroy();
+            console.log("Database is alreasy connect destroy");
+        })
+    },2000);
+
+    return;
 });
 
 // U = Update Receipt
@@ -63,21 +146,62 @@ router.put('/', (req, res)=>{
 
     var sql = "UPDATE category SET name=" + model.name;
     sql += " WHERE _id=" + model._id
-    mysql_connection.connect();
-    mysql_connection.query(sql,(err,rows,fields)=>{
+    //- Error listener
+    mysql_connection.on('error', function(err) {
+        //- The server close the connection.
+        if(err.code === "PROTOCOL_CONNECTION_LOST"){    
+            console.log("/!\\ 1Cannot establish a connection with the database. /!\\ ("+err.code+")");
+            mysql_connection = reconnect(mysql_connection.connect());
+        }
+
+        //- Connection in closing
+        else if(err.code === "PROTOCOL_ENQUEUE_AFTER_QUIT"){
+            console.log("/!\\ 2Cannot establish a connection with the database. /!\\ ("+err.code+")");
+            mysql_connection = reconnect(mysql_connection.connect());
+        }
+
+        //- Fatal error : connection variable must be recreated
+        else if(err.code === "PROTOCOL_ENQUEUE_AFTER_FATAL_ERROR"){
+            console.log("/!\\ 3Cannot establish a connection with the database. /!\\ ("+err.code+")");
+            mysql_connection = reconnect(mysql_connection.connect());
+        }
+
+        //- Error because a connection is already being established
+        else if(err.code === "PROTOCOL_ENQUEUE_HANDSHAKE_TWICE"){
+            console.log("/!\\ 4Cannot establish a connection with the database. /!\\ ("+err.code+")");
+        }
+
+        //- Anything else
+        else{
+            console.log("/!\\ Cannot establish a connection with the database. /!\\ ("+err.code+")");
+            mysql_connection = reconnect(mysql_connection.connect());
+        }
+
+    });
+
+    mysql_connection.query({sql:sql, timeout: 3000},(err,rows,fields)=>{
         if(!err){
-            mysql_connection.end();
+            
             return res.status(200).json({
                 item: model
             })
         }else{
-            mysql_connection.end();
+            
             return res.status(500).json({
                 code: 500,
                 message: catchError(err.errno)
             })
         }
     })
+
+    setTimeout(function(){
+        mysql_connection.on('connect', function(){
+            mysql_connection.destroy();
+            console.log("Database is alreasy connect destroy");
+        })
+    },2000);
+
+    return;
 })
 
 // D = Delete
@@ -85,22 +209,63 @@ router.delete('/:_id', (req, res)=>{
     let _id = req.params._id;
 
     let sql = "DELETE FROM category WHERE _id = " + _id
-    mysql_connection.connect();
-    mysql_connection.query(sql,(err,rows,fields)=>{
+    //- Error listener
+    mysql_connection.on('error', function(err) {
+        //- The server close the connection.
+        if(err.code === "PROTOCOL_CONNECTION_LOST"){    
+            console.log("/!\\ 1Cannot establish a connection with the database. /!\\ ("+err.code+")");
+            mysql_connection = reconnect(mysql_connection.connect());
+        }
+
+        //- Connection in closing
+        else if(err.code === "PROTOCOL_ENQUEUE_AFTER_QUIT"){
+            console.log("/!\\ 2Cannot establish a connection with the database. /!\\ ("+err.code+")");
+            mysql_connection = reconnect(mysql_connection.connect());
+        }
+
+        //- Fatal error : connection variable must be recreated
+        else if(err.code === "PROTOCOL_ENQUEUE_AFTER_FATAL_ERROR"){
+            console.log("/!\\ 3Cannot establish a connection with the database. /!\\ ("+err.code+")");
+            mysql_connection = reconnect(mysql_connection.connect());
+        }
+
+        //- Error because a connection is already being established
+        else if(err.code === "PROTOCOL_ENQUEUE_HANDSHAKE_TWICE"){
+            console.log("/!\\ 4Cannot establish a connection with the database. /!\\ ("+err.code+")");
+        }
+
+        //- Anything else
+        else{
+            console.log("/!\\ Cannot establish a connection with the database. /!\\ ("+err.code+")");
+            mysql_connection = reconnect(mysql_connection.connect());
+        }
+
+    });
+
+    mysql_connection.query({sql:sql, timeout: 3000},(err,rows,fields)=>{
         if(!err){
-            mysql_connection.end();
+            
             return res.status(200).json({
                 message: "ลบข้อมูลประเภทรถสำเร็จ",
                 affected: "ส่งผลกระทบกับ " + rows.affectedRows + " เรคคอร์ด"
             })
         }else{
-            mysql_connection.end();
+            
             return res.status(500).json({
                 code: 500,
                 message: catchError(err.errno)
             })
         }
     })
+
+    setTimeout(function(){
+        mysql_connection.on('connect', function(){
+            mysql_connection.destroy();
+            console.log("Database is alreasy connect destroy");
+        })
+    },2000);
+
+    return;
 })
 
 function catchError(code){
@@ -115,6 +280,28 @@ function catchError(code){
     }else if(code == "1366"){
         return "please updated field to utf8"
     }
+}
+
+//- Reconnection function
+function reconnect(connection){
+    console.log("\n New connection tentative...");
+
+    //- Destroy the current connection variable
+    if(connection) connection.destroy();
+
+    //- Create a new one
+    var connection = mysql_npm.createConnection(db_config);
+
+    //- Try to reconnect
+    connection.connect(function(err){
+        if(err) {
+            //- Try to connect every 2 seconds.
+            // setTimeout(reconnect, 2000);
+        }else {
+            console.log("\n\t *** New connection established with the database. ***")
+            return connection;
+        }
+    });
 }
 
 module.exports = router;

@@ -26,7 +26,7 @@ app.listen(3000, () => {
 // R = Retrieve
 app.get('/car', (req, res) => {
     mysql_connection.connect();
-    mysql_connection.query('SELECT * FROM member', (err, rows, field) => {
+    mysql_connection.query({sql:'SELECT * FROM member', timeout: 5000}, (err, rows, field) => {
         if (!err) {
             mysql_connection.end();
             rows.forEach(element => {

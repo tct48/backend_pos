@@ -19,15 +19,13 @@ var mysql_connection = mysql.createConnection({
     database: "deejung1_pos",
     multipleStatements: true,
 })
-mysql_connection.timeout=0;
+// mysql_connection.timeout=5000;
 
-mysql_connection.connect((err)=>{
-    if(!err){
-        console.log("Connect to Database")
-    }else{
-        console.log("Database connection failed\n Error: " + JSON.stringify(err,undefined,2));
-    }
-})
+// mysql_connection.connect((err)=>{
+//     if(!err){
+//         console.log("Connect to Database")
+//     }
+// })
 
 mysql_connection = global.Promise;
 
