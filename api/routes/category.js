@@ -12,7 +12,7 @@ var mysql_connection = mysql.createConnection({
     password: "123456@q!",
     database: "deejung1_pos",
     multipleStatements: true,
-});
+}); 
 // mysql_connection.timeout=5000;
 
 // C => Created Receipt
